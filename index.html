@@ -41,10 +41,16 @@
       font-weight: bold;
     }
 
-    .ingredients {
+    .conveyor-stage {
+      width: 100%;
+      height: 120px;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
+      background-color: #fce4b3;
+      margin: 8px 0;
+      border: 2px dashed #d17d00;
+      border-radius: 8px;
     }
 
     .ingredient {
@@ -56,12 +62,18 @@
       cursor: pointer;
     }
 
-    #assembled-order {
+    .chef {
+      width: 80px;
+      height: 80px;
       margin-top: 10px;
-      min-height: 40px;
-      font-size: 1em;
-      color: #444;
-      text-align: center;
+      background: url('https://cdn-icons-png.flaticon.com/512/1046/1046784.png') no-repeat center/contain;
+      transition: transform 0.5s;
+    }
+
+    #result {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-top: 10px;
     }
 
     button {
@@ -79,67 +91,84 @@
   <div id="game-container">
     <h1>Kishor's Kafeteria</h1>
     <div id="order-display">Loading order...</div>
-    <div class="ingredients" id="ingredients"></div>
-    <div id="assembled-order">Your assembled dish: <span id="dish">None</span></div>
+
+    <div class="conveyor-stage" id="base-stage"></div>
+    <div class="conveyor-stage" id="filling-stage"></div>
+    <div class="conveyor-stage" id="topping-stage"></div>
+
+    <div class="chef" id="chef"></div>
     <button onclick="submitOrder()">Serve Order</button>
-    <div id="feedback"></div>
+    <div id="result"></div>
   </div>
 
   <script>
     const orders = [
-      { name: 'Bread Omelette', ingredients: ['Bread', 'Egg', 'Butter'] },
-      { name: 'Aloo Paratha', ingredients: ['Dough', 'Potato', 'Butter'] },
-      { name: 'Masala Maggi', ingredients: ['Maggi Noodles', 'Spices', 'Vegetables'] },
-      { name: 'Chai & Samosa', ingredients: ['Tea', 'Samosa'] },
-      { name: 'Paneer Sandwich', ingredients: ['Bread', 'Paneer', 'Sauce'] }
+      { name: 'Bread Omelette', base: 'Bread', filling: 'Egg', topping: 'Butter' },
+      { name: 'Aloo Paratha', base: 'Dough', filling: 'Potato', topping: 'Butter' },
+      { name: 'Masala Maggi', base: 'Maggi Noodles', filling: 'Vegetables', topping: 'Spices' },
+      { name: 'Paneer Sandwich', base: 'Bread', filling: 'Paneer', topping: 'Sauce' }
     ];
 
     let currentOrder = null;
-    let selectedIngredients = [];
-
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
+    let selections = { base: null, filling: null, topping: null };
 
     function loadOrder() {
-      selectedIngredients = [];
       const index = Math.floor(Math.random() * orders.length);
       currentOrder = orders[index];
+      selections = { base: null, filling: null, topping: null };
       document.getElementById('order-display').innerText = `Customer wants: ${currentOrder.name}`;
-      document.getElementById('dish').innerText = 'None';
-      document.getElementById('feedback').innerText = '';
+      document.getElementById('result').innerText = '';
+      document.getElementById('chef').style.transform = 'translateX(0) rotate(0deg)';
+      generateStage('base-stage', ['Bread', 'Dough', 'Maggi Noodles'], 'base');
+      generateStage('filling-stage', ['Egg', 'Potato', 'Paneer', 'Vegetables'], 'filling');
+      generateStage('topping-stage', ['Butter', 'Spices', 'Sauce'], 'topping');
+    }
 
-      const allIngredients = shuffle([...new Set(orders.flatMap(o => o.ingredients))]);
-      const ingredientDiv = document.getElementById('ingredients');
-      ingredientDiv.innerHTML = '';
-      allIngredients.forEach(ingredient => {
+    function generateStage(stageId, items, type) {
+      const stage = document.getElementById(stageId);
+      stage.innerHTML = '';
+      items.forEach(item => {
         const el = document.createElement('div');
-        el.classList.add('ingredient');
-        el.innerText = ingredient;
-        el.onclick = () => addIngredient(ingredient);
-        ingredientDiv.appendChild(el);
+        el.className = 'ingredient';
+        el.innerText = item;
+        el.onclick = () => {
+          selections[type] = item;
+          el.style.backgroundColor = '#a5d6a7';
+          Array.from(stage.children).forEach(child => {
+            if (child !== el) child.style.backgroundColor = '#fff3e0';
+          });
+        };
+        stage.appendChild(el);
       });
     }
 
-    function addIngredient(ingredient) {
-      if (!selectedIngredients.includes(ingredient)) {
-        selectedIngredients.push(ingredient);
-        document.getElementById('dish').innerText = selectedIngredients.join(', ');
-      }
-    }
-
     function submitOrder() {
-      const isCorrect = currentOrder.ingredients.every(i => selectedIngredients.includes(i)) &&
-                        selectedIngredients.length === currentOrder.ingredients.length;
-      const feedback = document.getElementById('feedback');
-      if (isCorrect) {
-        feedback.innerText = '✅ Correct! Order served.';
-        feedback.style.color = 'green';
-      } else {
-        feedback.innerText = '❌ Incorrect. Try again!';
-        feedback.style.color = 'red';
+      const { base, filling, topping } = selections;
+      const chef = document.getElementById('chef');
+      const result = document.getElementById('result');
+
+      if (!base || !filling || !topping) {
+        result.innerText = 'Please complete all 3 steps!';
+        result.style.color = 'orange';
+        return;
       }
-      setTimeout(loadOrder, 2000);
+
+      const isCorrect =
+        base === currentOrder.base &&
+        filling === currentOrder.filling &&
+        topping === currentOrder.topping;
+
+      if (isCorrect) {
+        result.innerText = '✅ Order Served! Chef is Happy!';
+        result.style.color = 'green';
+        chef.style.transform = 'translateX(100px) rotate(20deg)';
+      } else {
+        result.innerText = '❌ Wrong combo! Try again.';
+        result.style.color = 'red';
+        chef.style.transform = 'translateX(-100px) rotate(-20deg)';
+      }
+
+      setTimeout(loadOrder, 2500);
     }
 
     loadOrder();
