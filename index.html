@@ -28,6 +28,7 @@
       flex-direction: column;
       align-items: center;
       padding: 10px;
+      position: relative;
     }
 
     h1 {
@@ -43,7 +44,7 @@
 
     .conveyor-stage {
       width: 100%;
-      height: 120px;
+      height: 100px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -51,6 +52,7 @@
       margin: 8px 0;
       border: 2px dashed #d17d00;
       border-radius: 8px;
+      overflow-x: auto;
     }
 
     .ingredient {
@@ -60,18 +62,21 @@
       border: 2px solid #d17d00;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 1.5em;
+    }
+
+    .selected-visuals {
+      margin-top: 10px;
+      font-size: 2em;
     }
 
     .chef {
-      width: 80px;
-      height: 80px;
-      margin-top: 10px;
-      background: url('https://cdn-icons-png.flaticon.com/512/1046/1046784.png') no-repeat center/contain;
+      font-size: 3em;
       transition: transform 0.5s;
     }
 
     #result {
-      font-size: 1.1em;
+      font-size: 1.2em;
       font-weight: bold;
       margin-top: 10px;
     }
@@ -96,7 +101,8 @@
     <div class="conveyor-stage" id="filling-stage"></div>
     <div class="conveyor-stage" id="topping-stage"></div>
 
-    <div class="chef" id="chef"></div>
+    <div class="selected-visuals" id="visual-track"></div>
+    <div class="chef" id="chef">🧑‍🍳</div>
     <button onclick="submitOrder()">Serve Order</button>
     <div id="result"></div>
   </div>
@@ -109,6 +115,19 @@
       { name: 'Paneer Sandwich', base: 'Bread', filling: 'Paneer', topping: 'Sauce' }
     ];
 
+    const emojiMap = {
+      'Bread': '🍞',
+      'Dough': '🥟',
+      'Maggi Noodles': '🍜',
+      'Egg': '🥚',
+      'Potato': '🥔',
+      'Paneer': '🧀',
+      'Vegetables': '🥦',
+      'Butter': '🧈',
+      'Spices': '🌶️',
+      'Sauce': '🫙'
+    };
+
     let currentOrder = null;
     let selections = { base: null, filling: null, topping: null };
 
@@ -118,7 +137,8 @@
       selections = { base: null, filling: null, topping: null };
       document.getElementById('order-display').innerText = `Customer wants: ${currentOrder.name}`;
       document.getElementById('result').innerText = '';
-      document.getElementById('chef').style.transform = 'translateX(0) rotate(0deg)';
+      document.getElementById('chef').innerText = '🧑‍🍳';
+      document.getElementById('visual-track').innerText = '';
       generateStage('base-stage', ['Bread', 'Dough', 'Maggi Noodles'], 'base');
       generateStage('filling-stage', ['Egg', 'Potato', 'Paneer', 'Vegetables'], 'filling');
       generateStage('topping-stage', ['Butter', 'Spices', 'Sauce'], 'topping');
@@ -130,16 +150,26 @@
       items.forEach(item => {
         const el = document.createElement('div');
         el.className = 'ingredient';
-        el.innerText = item;
+        el.innerText = emojiMap[item] + ' ' + item;
         el.onclick = () => {
           selections[type] = item;
-          el.style.backgroundColor = '#a5d6a7';
+          updateVisuals();
           Array.from(stage.children).forEach(child => {
-            if (child !== el) child.style.backgroundColor = '#fff3e0';
+            child.style.backgroundColor = '#fff3e0';
           });
+          el.style.backgroundColor = '#a5d6a7';
         };
         stage.appendChild(el);
       });
+    }
+
+    function updateVisuals() {
+      const { base, filling, topping } = selections;
+      let visual = '';
+      if (base) visual += emojiMap[base];
+      if (filling) visual += emojiMap[filling];
+      if (topping) visual += emojiMap[topping];
+      document.getElementById('visual-track').innerText = visual;
     }
 
     function submitOrder() {
@@ -159,16 +189,16 @@
         topping === currentOrder.topping;
 
       if (isCorrect) {
-        result.innerText = '✅ Order Served! Chef is Happy!';
+        result.innerText = '✅ Order Served!';
         result.style.color = 'green';
-        chef.style.transform = 'translateX(100px) rotate(20deg)';
+        chef.innerText = '🕺🧑‍🍳💃';
       } else {
         result.innerText = '❌ Wrong combo! Try again.';
         result.style.color = 'red';
-        chef.style.transform = 'translateX(-100px) rotate(-20deg)';
+        chef.innerText = '😓🧑‍🍳😓';
       }
 
-      setTimeout(loadOrder, 2500);
+      setTimeout(loadOrder, 3000);
     }
 
     loadOrder();
