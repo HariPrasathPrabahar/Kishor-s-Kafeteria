@@ -2,206 +2,222 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kishor's Kafe</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Fredoka One', cursive;
-      background-color: #fffbe6;
+      padding: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background-color: #ffe6cc;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
       overflow: hidden;
     }
 
-    header {
-      width: 100%;
-      text-align: center;
+    #game-container {
+      width: 100vw;
+      max-width: 430px;
+      height: 100vh;
+      background-color: #fff8e1;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 10px;
-      background-color: #ffcd60;
-      font-size: 1.8em;
-      color: #542e00;
+      position: relative;
     }
 
-    .score {
+    h1 {
+      text-align: center;
+      color: #cc6600;
+      font-family: 'Fredoka One', cursive;
+      font-size: 2em;
+    }
+
+    #score {
       position: absolute;
       top: 10px;
-      right: 15px;
-      background: #ffd27f;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 1em;
-      color: #333;
-      box-shadow: 1px 1px 5px #aaa;
-    }
-
-    .order {
+      right: 20px;
       font-size: 1.2em;
-      margin: 10px;
-      color: #5e3b00;
-      text-align: center;
+      font-weight: bold;
+      color: #cc6600;
     }
 
-    .conveyor {
+    #order-display {
+      margin: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .conveyor-stage {
+      width: 100%;
+      height: 100px;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      height: 120px;
-      background-color: #f9e0a8;
-      margin: 10px 0;
+      background-color: #fce4b3;
+      margin: 8px 0;
+      border: 2px dashed #d17d00;
+      border-radius: 8px;
       overflow-x: auto;
-      border-top: 2px dashed #d2a44f;
-      border-bottom: 2px dashed #d2a44f;
     }
 
-    .conveyor span {
-      font-size: 2.5em;
-      margin: 0 15px;
-      transition: transform 0.3s;
-    }
-
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .buttons button {
-      margin: 8px;
-      padding: 12px 20px;
-      font-size: 1em;
-      background-color: #ffe0b3;
-      border: 2px solid #cc9f4d;
-      border-radius: 10px;
+    .ingredient {
+      margin: 5px;
+      padding: 10px;
+      background-color: #fff3e0;
+      border: 2px solid #d17d00;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      font-size: 1.5em;
     }
 
-    .buttons button:hover {
-      background-color: #ffd480;
+    .selected-visuals {
+      margin-top: 10px;
+      font-size: 2em;
     }
 
     .chef {
-      font-size: 4em;
-      transition: transform 0.5s ease-in-out;
+      font-size: 3em;
+      transition: transform 0.5s;
     }
 
-    .chef.happy {
-      animation: dance 1s ease-in-out infinite;
+    #result {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 10px;
     }
 
-    .chef.sad {
-      animation: sulk 1s ease-in-out infinite;
-    }
-
-    @keyframes dance {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(10deg); }
-      75% { transform: rotate(-10deg); }
-    }
-
-    @keyframes sulk {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(5px); }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #ffb84d;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>Kishor's Kafe</header>
-  <div class="score">Score: <span id="score">0</span></div>
-  <div class="order" id="orderText">You want Bread Omelette. Let's make it!</div>
-  <div class="conveyor" id="conveyor">
-    <!-- emoji items will be added here -->
-  </div>
+  <div id="game-container">
+    <div id="score">Score: 0</div>
+    <h1>Kishor's Kafe</h1>
+    <div id="order-display">Loading order...</div>
 
-  <div class="buttons" id="baseButtons">
-    <button onclick="selectItem('base', '🍞')">Bread</button>
-    <button onclick="selectItem('base', '🥞')">Pancake</button>
-    <button onclick="selectItem('base', '🍚')">Rice</button>
-  </div>
+    <div class="conveyor-stage" id="base-stage"></div>
+    <div class="conveyor-stage" id="filling-stage"></div>
+    <div class="conveyor-stage" id="topping-stage"></div>
 
-  <div class="buttons" id="fillingButtons" style="display:none;">
-    <button onclick="selectItem('filling', '🥚')">Egg</button>
-    <button onclick="selectItem('filling', '🥔')">Aloo</button>
-    <button onclick="selectItem('filling', '🍝')">Maggi</button>
+    <div class="selected-visuals" id="visual-track"></div>
+    <div class="chef" id="chef">🧑‍🍳</div>
+    <button onclick="submitOrder()">Serve Order</button>
+    <div id="result"></div>
   </div>
-
-  <div class="buttons" id="toppingButtons" style="display:none;">
-    <button onclick="selectItem('topping', '🧈')">Butter</button>
-    <button onclick="selectItem('topping', '🧀')">Cheese</button>
-    <button onclick="selectItem('topping', '🌶️')">Chilli</button>
-  </div>
-
-  <div class="chef" id="chef">🧑‍🍳</div>
 
   <script>
-    const correctOrder = {
-      base: '🍞',
-      filling: '🥚',
-      topping: '🧈'
+    const orders = [
+      { name: 'Bread Omelette', base: 'Bread', filling: 'Egg', topping: 'Butter' },
+      { name: 'Aloo Paratha', base: 'Dough', filling: 'Potato', topping: 'Butter' },
+      { name: 'Masala Maggi', base: 'Maggi Noodles', filling: 'Vegetables', topping: 'Spices' },
+      { name: 'Paneer Sandwich', base: 'Bread', filling: 'Paneer', topping: 'Sauce' }
+    ];
+
+    const emojiMap = {
+      'Bread': '🍞',
+      'Dough': '🥟',
+      'Maggi Noodles': '🍜',
+      'Egg': '🥚',
+      'Potato': '🥔',
+      'Paneer': '🧀',
+      'Vegetables': '🥦',
+      'Butter': '🧈',
+      'Spices': '🌶️',
+      'Sauce': '🫙'
     };
 
-    const selections = {
-      base: null,
-      filling: null,
-      topping: null
-    };
-
+    let currentOrder = null;
+    let selections = { base: null, filling: null, topping: null };
     let score = 0;
 
-    function selectItem(type, emoji) {
-      selections[type] = emoji;
-      document.getElementById('conveyor').innerHTML = `
-        <span>${selections.base || ''}</span>
-        <span>${selections.filling || ''}</span>
-        <span>${selections.topping || ''}</span>
-      `;
-
-      if (type === 'base') {
-        document.getElementById('baseButtons').style.display = 'none';
-        document.getElementById('fillingButtons').style.display = 'flex';
-      } else if (type === 'filling') {
-        document.getElementById('fillingButtons').style.display = 'none';
-        document.getElementById('toppingButtons').style.display = 'flex';
-      } else if (type === 'topping') {
-        checkOrder();
-      }
+    function loadOrder() {
+      const index = Math.floor(Math.random() * orders.length);
+      currentOrder = orders[index];
+      selections = { base: null, filling: null, topping: null };
+      document.getElementById('order-display').innerText = `You want ${currentOrder.name}. Let's make it!`;
+      document.getElementById('result').innerText = '';
+      document.getElementById('chef').innerText = '🧑‍🍳';
+      document.getElementById('visual-track').innerText = '';
+      generateStage('base-stage', ['Bread', 'Dough', 'Maggi Noodles'], 'base');
+      generateStage('filling-stage', ['Egg', 'Potato', 'Paneer', 'Vegetables'], 'filling');
+      generateStage('topping-stage', ['Butter', 'Spices', 'Sauce'], 'topping');
     }
 
-    function checkOrder() {
+    function generateStage(stageId, items, type) {
+      const stage = document.getElementById(stageId);
+      stage.innerHTML = '';
+      items.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'ingredient';
+        el.innerText = emojiMap[item] + ' ' + item;
+        el.onclick = () => {
+          selections[type] = item;
+          updateVisuals();
+          Array.from(stage.children).forEach(child => {
+            child.style.backgroundColor = '#fff3e0';
+          });
+          el.style.backgroundColor = '#a5d6a7';
+        };
+        stage.appendChild(el);
+      });
+    }
+
+    function updateVisuals() {
+      const { base, filling, topping } = selections;
+      let visual = '';
+      if (base) visual += emojiMap[base];
+      if (filling) visual += emojiMap[filling];
+      if (topping) visual += emojiMap[topping];
+      document.getElementById('visual-track').innerText = visual;
+    }
+
+    function submitOrder() {
+      const { base, filling, topping } = selections;
       const chef = document.getElementById('chef');
-      if (
-        selections.base === correctOrder.base &&
-        selections.filling === correctOrder.filling &&
-        selections.topping === correctOrder.topping
-      ) {
-        chef.className = 'chef happy';
-        score++;
-        document.getElementById('score').textContent = score;
-      } else {
-        chef.className = 'chef sad';
+      const result = document.getElementById('result');
+
+      if (!base || !filling || !topping) {
+        result.innerText = 'Please complete all 3 steps!';
+        result.style.color = 'orange';
+        return;
       }
 
-      setTimeout(() => {
-        resetGame();
-      }, 1500);
+      const isCorrect =
+        base === currentOrder.base &&
+        filling === currentOrder.filling &&
+        topping === currentOrder.topping;
+
+      if (isCorrect) {
+        result.innerText = '✅ Order Served!';
+        result.style.color = 'green';
+        chef.innerText = '🕺🧑‍🍳💃';
+        score++;
+        document.getElementById('score').innerText = `Score: ${score}`;
+      } else {
+        result.innerText = '❌ Wrong combo! Try again.';
+        result.style.color = 'red';
+        chef.innerText = '😓🧑‍🍳😓';
+      }
+
+      setTimeout(loadOrder, 3000);
     }
 
-    function resetGame() {
-      selections.base = null;
-      selections.filling = null;
-      selections.topping = null;
-      document.getElementById('conveyor').innerHTML = '';
-      document.getElementById('baseButtons').style.display = 'flex';
-      document.getElementById('fillingButtons').style.display = 'none';
-      document.getElementById('toppingButtons').style.display = 'none';
-      document.getElementById('chef').className = 'chef';
-    }
+    loadOrder();
   </script>
 </body>
 </html>
